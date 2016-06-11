@@ -1,7 +1,9 @@
 # assembly-battleship-singleplayer
 
+## Description
 UND - Csci370 Single Player Assembly Game
 
+## Code License
 The MIT License (MIT)
 Copyright (c) <year> <copyright holders>
 
