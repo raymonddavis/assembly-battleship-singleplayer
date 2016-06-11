@@ -170,8 +170,6 @@ plot_ship:				# plots ships (returns to line under plot)
 	li 	$t2, 'O'		# store ship marker (O) in $t2
 	lh 	$t1, offset1($t0)	# get offset for grid 1 store in $t1
 	sb 	$t2, board($t1)		# plot $t2 on board using offset $t1
-	lh 	$t1, offset2($t0)	# get offset for grid 2 store in $t1
-	sb 	$t2, board($t1)		# plot $t2 on board using offset $t1
 	jr	$ra			# jump to line under plot_ship call
 plot:					# plot the shot (returns to line under called position)
 	mul 	$t0, $t0, 2		# mulitply $t0 by 2
