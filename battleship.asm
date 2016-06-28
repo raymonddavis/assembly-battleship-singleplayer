@@ -116,6 +116,7 @@ main:					# program starts here
 	syscall				# print
 	la	$t7, 0			# user score = 0 (once this hits 6 the game is over)
 	la	$t6, 0			# system score = 0 (once this hits 6 the game is over)
+	la	$t5, 0			# if hit this is 1 if miss this is 0
 	#Random place system ship
 	j next_shot_user			# jump to next_shot
 next_shot_user:				# prompts user for next shot
@@ -136,7 +137,19 @@ next_shot_user:				# prompts user for next shot
 	li	$v0, 4			# print string
 	syscall				# print
 	beq	$t7, 6, new_game	# $t7 == 6 call new_game
+	beq	$t5, 0, next_shot_system
 	j 	next_shot_user		# call next_shot
+next_shot_system:
+	la	$a0, system_shot		# load shot message	
+	li	$v0, 4			# print string
+	syscall		
+	jal 	plot_system		# call plot
+	la	$a0, system		# load user
+	li	$v0, 4			# print string
+	syscall				# print
+	beq	$t6, 6, new_game	# $t7 == 6 call new_game
+	beq	$t5, 0, next_shot_user
+	j 	next_shot_system	# call next_shot_system
 invalid:				# print invalid message and print user agian
 	la	$a0, invalid_shot	# load invalid message
 	li	$v0, 4			# print string
@@ -199,12 +212,14 @@ plot_user:				# plot the shot (returns to line under called position)
 	syscall				# print
 	jr 	$ra			# return to line under plot
 plot_hit_user:				# plot hits (called from plot returns to line under plot)
+	li	$t5, 1
 	add	$t7, $t7, 1		# increment score (at 6 game over)
 	li 	$t3, 'X'		# store hit marker (X) in $t3
 	sb 	$t3, system($t1)		# plot $t3 on user using offset $t1
 	sb 	$t3, user($t2)		# plot $t3 on user using offset $t2
 	jr	$ra			# jump to line under plot_hit call
 plot_miss_user:				# plot misses (called from plot returns to line under plot)
+	li	$t5, 0
 	li 	$t3, '+'		# store hit marker (+) in $t3
 	sb 	$t3, system($t1)		# plot $t3 on user using offset $t1
 	sb 	$t3, user($t2)		# plot $t3 on user using offset $t2
@@ -216,23 +231,27 @@ plot_ship_system:			# plots ships (returns to line under plot)
 	sb 	$t2, system($t1)	# plot $t2 on user using offset $t1
 	jr	$ra			# jump to line under plot_ship call
 plot_system:				# plot the shot (returns to line under called position)
+	li	$a1, 35
+	li 	$v0, 42       
+	add 	$a0, $a0, 35
+	syscall
+	move	$t0, $a0		# move $a0 into $t0
 	mul 	$t0, $t0, 2		# mulitply $t0 by 2
 	lh	$t1, offset1($t0)	# get offset for grid 1 store in $t1
 	lh	$t2, offset2($t0)	# get offset for grid 2 store in $t2
 	lb	$t0, user($t1)		# load byte $t0 from user using offset $t1
 	beq	$t0, 'O', plot_hit_system	# $t0 == 0 call plot_hit
 	beq	$t0, '.', plot_miss_system	# $t0 == . call plot_miss
-	la	$a0, duplicate_shot	# else load duplicate_shot message
-	li	$v0, 4			# print string
-	syscall				# print
-	jr 	$ra			# return to line under plot
+	j	plot_system
 plot_hit_system:			# plot hits (called from plot returns to line under plot)
-	add	$t7, $t7, 1		# increment score (at 6 game over)
+	li	$t5, 1
+	add	$t6, $t6, 1		# increment score (at 6 game over)
 	li 	$t3, 'X'		# store hit marker (X) in $t3
 	sb 	$t3, user($t1)	# plot $t3 on user using offset $t1
 	sb 	$t3, system($t2)	# plot $t3 on user using offset $t2
 	jr	$ra			# jump to line under plot_hit call
 plot_miss_system:			# plot misses (called from plot returns to line under plot)
+	li	$t5, 0
 	li 	$t3, '+'		# store hit marker (+) in $t3
 	sb 	$t3, user($t1)	# plot $t3 on user using offset $t1
 	sb 	$t3, system($t2)	# plot $t3 on user using offset $t2
