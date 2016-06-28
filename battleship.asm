@@ -144,7 +144,7 @@ next_shot_system:
 	li	$v0, 4			# print string
 	syscall		
 	jal 	plot_system		# call plot
-	la	$a0, system		# load user
+	la	$a0, user		# load user
 	li	$v0, 4			# print string
 	syscall				# print
 	beq	$t6, 6, new_game	# $t7 == 6 call new_game
