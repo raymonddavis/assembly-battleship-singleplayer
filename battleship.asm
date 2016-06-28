@@ -129,8 +129,6 @@ next_shot_user:				# prompts user for next shot
 	syscall				# read
 	lb	$a0, buf		# shot position
 	jal 	convert			# call convert
-	beq	$a0, -1, show_system	# if -1 show system (/)
-	beq	$a0, -5, invalid	# if invalid input call invalid
 	move	$t0, $a0		# move $a0 into $t0
 	jal 	plot_user		# call plot
 	la	$a0, user		# load user
@@ -185,8 +183,12 @@ convert: 				# convert input into correct int 0-9 or a-z (returns to line under 
 	bgt 	$a0, 9, over 		# > 9 goto over
 	jr 	$ra 			# jump to line under convert call
 under:					# if input is a symbol or other	(called from under returns to line under convert)
+	beq	$a0, -1, show_system	# if -1 show system (/)
+	li	$a0, -5
+	beq	$a0, -5, invalid	# if invalid input call invalid
 	jr	$ra			# jump to line under convert call
 over:					# if the input is a character (called from convert return to line under convert)
+	blt	$a0, 49, invalid
 	sub	$a0, $a0, 39		# a-z
 	jr	$ra			# jump to line under convert call
 show_system:
